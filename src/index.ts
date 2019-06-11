@@ -1,56 +1,112 @@
 import * as R from 'remeda'
 import P from 'parsimmon'
-import { lexme } from './helper'
+import { skipOptWs, orOptWs } from './helper'
 
 const classKeyWord = R.pipe(
   'class',
   P.string,
-  lexme,
+  skipOptWs,
 )
 
 const className = R.pipe(
   /^[A-Z]+[a-zA-Z0-9]*/,
   P.regexp,
-  lexme,
+  skipOptWs,
 )
 
 const l = R.pipe(
   P.string('{'),
-  lexme,
+  skipOptWs,
 )
 const r = R.pipe(
   P.string('}'),
-  lexme,
+  skipOptWs,
 )
 
 const classExtendsKeyWord = R.pipe(
   'extends',
   P.string,
-  lexme,
+  skipOptWs,
 )
 
+// class Hoge extends Poge
+//            ~~~~~~~~~~~~
+const classExtendsSection = R.pipe(
+  P.seq(
+    classExtendsKeyWord,
+    className,
+  ),
+  orOptWs,
+).map((name) => name[1])
+
+const visibility = R.pipe(
+  /[\-#~+]{1}/,
+  P.regexp,
+  orOptWs,
+)
+
+const propertyType = R.pipe(
+  /[A-Za-z]+[a-zA-Z0-9]*/,
+  P.regexp,
+  skipOptWs,
+)
+
+const propertyName = R.pipe(
+  /[A-Za-z]+[a-zA-Z0-9]*/,
+  P.regexp,
+  skipOptWs,
+)
+
+/**
+ * class Hoge {
+ *   String foo
+ *   ~~~~~~~~~~
+ * }
+ */
+
+ const visibilityMap = Object.freeze({
+    '-': 'private',
+    '+': 'public',
+    '#': 'protected',
+    '~': 'package',
+ })
+
+ type Visibility = keyof typeof visibilityMap 
+
+const convertVisibilityString = (v: string) => {
+  const visibility = (/[\-+#~]{1}/.test(v) ? v : '~') as Visibility
+  return visibilityMap[visibility]
+}
+
+const property = R.pipe(
+  P.seq(
+    visibility,
+    propertyType,
+    propertyName,
+  ).map(([visibility, type, name]) => ({
+    visibility: convertVisibilityString(visibility),
+    type,
+    name,
+  })).many().map((properties) => ({ properties })),
+  orOptWs,
+)
+
+// class Hoge { }
+//            ~~~
+const classBodySection = P.seq(
+  l,
+  property,
+  r,
+).map(([_l, body, _r]) => body)
+
 const xlass = P.seq(
-  // class Hoge
-  // ~~~~~~~~~~
   P.seq(
     classKeyWord,
     className,
-    // class Hoge extends Poge
-    //            ~~~~~~~~~~~~
-    P.seq(
-      classExtendsKeyWord,
-      className,
-    ).or(P.optWhitespace)
-     .map((name) => name[1])
-  ).map(([_1, name, extended]) => [name, extended]),
-  // class Hoge { }
-  //            ~~~
-  P.seq(
-    l,
-    P.optWhitespace, // TODO
-    r,
-  ).map(([_l, body, _r]) => body)
-).map(([[name, extended], body]) => ({
+    classExtendsSection,
+  ),
+  classBodySection,
+).map(([[_1, name, extended], body]) => ({
   class: {
     name,
     extended, 
@@ -61,19 +117,22 @@ const xlass = P.seq(
 const start = R.pipe(
   '@startuml',
   P.string,
-  lexme,
+  skipOptWs,
 )
 
 const end = R.pipe(
   '@enduml',
   P.string,
-  lexme,
+  skipOptWs,
 )
 
 const root = P.optWhitespace.then(
   P.seq(
     start,
-    xlass.or(P.optWhitespace),
+    R.pipe(
+      xlass.many(),
+      orOptWs,
+    ),
     end,
   )
 )
