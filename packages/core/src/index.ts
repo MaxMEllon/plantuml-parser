@@ -32,12 +32,9 @@ const classExtendsKeyWord = R.pipe(
 // class Hoge extends Poge
 //            ~~~~~~~~~~~~
 const classExtendsSection = R.pipe(
-  P.seq(
-    classExtendsKeyWord,
-    className,
-  ),
+  P.seq(classExtendsKeyWord, className),
   orOptWs,
-).map((name) => name[1])
+).map(name => name[1])
 
 const visibility = R.pipe(
   /[\-#~+]{1}/,
@@ -64,14 +61,14 @@ const propertyName = R.pipe(
  * }
  */
 
- const visibilityMap = Object.freeze({
-    '-': 'private',
-    '+': 'public',
-    '#': 'protected',
-    '~': 'package',
- })
+const visibilityMap = Object.freeze({
+  '-': 'private',
+  '+': 'public',
+  '#': 'protected',
+  '~': 'package',
+})
 
- type Visibility = keyof typeof visibilityMap 
+type Visibility = keyof typeof visibilityMap
 
 const convertVisibilityString = (v: string) => {
   const visibility = (/[\-+#~]{1}/.test(v) ? v : '~') as Visibility
@@ -79,39 +76,27 @@ const convertVisibilityString = (v: string) => {
 }
 
 const property = R.pipe(
-  P.seq(
-    visibility,
-    propertyType,
-    propertyName,
-  ).map(([visibility, type, name]) => ({
-    visibility: convertVisibilityString(visibility),
-    type,
-    name,
-  })).many().map((properties) => ({ properties })),
+  P.seq(visibility, propertyType, propertyName)
+    .map(([visibility, type, name]) => ({
+      visibility: convertVisibilityString(visibility),
+      type,
+      name,
+    }))
+    .many()
+    .map(properties => ({ properties })),
   orOptWs,
 )
 
 // class Hoge { }
 //            ~~~
-const classBodySection = P.seq(
-  l,
-  property,
-  r,
-).map(([_l, body, _r]) => body)
+const classBodySection = P.seq(l, property, r).map(([_l, body, _r]) => body)
 
-const xlass = P.seq(
-  P.seq(
-    classKeyWord,
-    className,
-    classExtendsSection,
-  ),
-  classBodySection,
-).map(([[_1, name, extended], body]) => ({
+const xlass = P.seq(P.seq(classKeyWord, className, classExtendsSection), classBodySection).map(([[_1, name, extended], body]) => ({
   class: {
     name,
-    extended, 
-    body
-  }
+    extended,
+    body,
+  },
 }))
 
 const start = R.pipe(
@@ -134,7 +119,7 @@ const root = P.optWhitespace.then(
       orOptWs,
     ),
     end,
-  )
+  ),
 )
 
 export default root
