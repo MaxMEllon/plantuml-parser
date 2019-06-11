@@ -54,13 +54,6 @@ const propertyName = R.pipe(
   skipOptWs,
 )
 
-/**
- * class Hoge {
- *   String foo
- *   ~~~~~~~~~~
- * }
- */
-
 const visibilityMap = Object.freeze({
   '-': 'private',
   '+': 'public',
@@ -75,6 +68,9 @@ const convertVisibilityString = (v: string) => {
   return visibilityMap[visibility]
 }
 
+// class Hoge {
+//   +String foo
+//   ~~~~~~~~~~~
 const property = R.pipe(
   P.seq(visibility, propertyType, propertyName)
     .map(([visibility, type, name]) => ({
