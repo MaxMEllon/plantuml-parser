@@ -1,42 +1,11 @@
 {
   "name": "plantuml-parser",
-  "version": "0.1.0",
-  "main": "dist/index.js",
-  "umd:main": "dist/plantuml-parser.umd.production.js",
-  "module": "dist/plantuml-parser.es.production.js",
-  "typings": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
-    "test": "tsdx test"
-  },
-  "peerDependencies": {},
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
-  },
-  "prettier": {
-    "printWidth": 80,
-    "semi": true,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
-  "devDependencies": {
-    "@types/jest": "^24.0.13",
-    "husky": "^2.4.0",
-    "prettier": "^1.18.2",
-    "pretty-quick": "^1.11.0",
-    "tsdx": "^0.6.1",
-    "tslib": "^1.9.3",
-    "typescript": "^3.5.1"
-  },
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/MaxMEllon/plantuml-parser.git",
+  "author": "maxmellon <tsujiken_melon@r.recruit.co.jp>",
+  "license": "MIT",
   "dependencies": {
-    "@types/parsimmon": "^1.10.0",
-    "parsimmon": "^1.12.0",
-    "remeda": "0.0.11"
+    "lerna": "^3.15.0"
   }
 }
