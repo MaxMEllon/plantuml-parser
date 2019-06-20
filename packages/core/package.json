@@ -1,5 +1,5 @@
 {
-  "name": "plantuml-parser",
+  "name": "@plantuml-parser/core",
   "version": "0.1.0",
   "main": "dist/index.js",
   "umd:main": "dist/plantuml-parser.umd.production.js",

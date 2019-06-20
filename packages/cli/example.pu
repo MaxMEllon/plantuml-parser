@@ -1,0 +1,9 @@
+@startuml
+
+class Hoge extends Foo {
+  +age number
+  +name string
+  -foo any
+}
+
+@enduml

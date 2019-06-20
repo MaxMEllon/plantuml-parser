@@ -5,11 +5,15 @@
   "repository": "https://github.com/MaxMEllon/plantuml-parser.git",
   "author": "maxmellon <tsujiken_melon@r.recruit.co.jp>",
   "license": "MIT",
+  "scripts": {
+    "build": "lerna run build"
+  },
   "dependencies": {
     "lerna": "^3.15.0"
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",
-    "typescript": "3.5.1"
+    "typescript": "3.5.1",
+    "@plantuml-parser/core": "0.1.0"
   }
 }

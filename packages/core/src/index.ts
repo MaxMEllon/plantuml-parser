@@ -42,7 +42,7 @@ const visibility = R.pipe(
   orOptWs,
 )
 
-const propertyType = R.pipe(
+const typeIdentify = R.pipe(
   /[A-Za-z]+[a-zA-Z0-9]*/,
   P.regexp,
   skipOptWs,
@@ -72,7 +72,7 @@ const convertVisibilityString = (v: string) => {
 //   +String foo
 //   ~~~~~~~~~~~
 const property = R.pipe(
-  P.seq(visibility, propertyType, propertyName)
+  P.seq(visibility, typeIdentify, propertyName)
     .map(([visibility, type, name]) => ({
       visibility: convertVisibilityString(visibility),
       type,
