@@ -1,32 +1,32 @@
-import * as R from 'remeda'
+import { pipe } from 'remeda'
 import P from 'parsimmon'
 import { skip, or, mapper, then, many } from './helper'
 import { ClassPropertyAST, Visibility, VisibilityChars } from 'types'
 
 const _ = P.optWhitespace
 
-const classKeyWord = R.pipe(
+const classKeyWord = pipe(
   'class',
   P.string,
   skip(_),
 )
 
-const className = R.pipe(
+const className = pipe(
   /^[A-Z]+[a-zA-Z0-9]*/,
   P.regexp,
   skip(_),
 )
 
-const l = R.pipe(
+const l = pipe(
   P.string('{'),
   skip(_),
 )
-const r = R.pipe(
+const r = pipe(
   P.string('}'),
   skip(_),
 )
 
-const classExtendsKeyWord = R.pipe(
+const classExtendsKeyWord = pipe(
   'extends',
   P.string,
   skip(_),
@@ -34,25 +34,25 @@ const classExtendsKeyWord = R.pipe(
 
 // class Hoge extends Poge
 //            ~~~~~~~~~~~~
-const classExtendsSection = R.pipe(
+const classExtendsSection = pipe(
   P.seq(classExtendsKeyWord, className),
   or(_),
   mapper(name => (Array.isArray(name) ? name[1] : void 0)),
 )
 
-const visibility = R.pipe(
+const visibility = pipe(
   /[\-#~+]{1}/,
   P.regexp,
   or(_),
 )
 
-const typeIdentify = R.pipe(
+const typeIdentify = pipe(
   /[A-Za-z]+[a-zA-Z0-9]*/,
   P.regexp,
   skip(_),
 )
 
-const propertyName = R.pipe(
+const propertyName = pipe(
   /[A-Za-z]+[a-zA-Z0-9]*/,
   P.regexp,
   skip(_),
@@ -79,7 +79,7 @@ const propertyMapper = ([visibility, type, name]: [string, string, string]): Cla
   name,
 })
 
-const property = R.pipe(
+const property = pipe(
   P.seq(visibility, typeIdentify, propertyName),
   mapper(propertyMapper),
   many,
@@ -89,12 +89,12 @@ const property = R.pipe(
 
 // class Hoge { }
 //            ~~~
-const classBodySection = R.pipe(
+const classBodySection = pipe(
   P.seq(l, property, r),
   mapper(([_l, body, _r]) => body),
 )
 
-const xlass = R.pipe(
+const xlass = pipe(
   P.seq(
     //
     P.seq(classKeyWord, className, classExtendsSection),
@@ -109,24 +109,24 @@ const xlass = R.pipe(
   })),
 )
 
-const start = R.pipe(
+const start = pipe(
   '@startuml',
   P.string,
   skip(_),
 )
 
-const end = R.pipe(
+const end = pipe(
   '@enduml',
   P.string,
   skip(_),
 )
 
-const root = R.pipe(
+const root = pipe(
   _,
   then(
     P.seq(
       start,
-      R.pipe(
+      pipe(
         many(xlass),
         or(_),
       ),
