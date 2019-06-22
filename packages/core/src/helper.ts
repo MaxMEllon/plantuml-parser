@@ -1,11 +1,15 @@
-import P, { Parser } from 'parsimmon'
+import { Parser } from 'parsimmon'
 
-export function skipOptWs<T>(p: Parser<T>) {
-  return p.skip(P.optWhitespace)
+export function skip<T>(p: Parser<T>) {
+  return <U>(x: Parser<U>) => x.skip(p)
 }
 
-export function orOptWs<T>(p: Parser<T>) {
-  return p.or(P.optWhitespace)
+export function or<T>(p: Parser<T>) {
+  return <U>(x: Parser<U>) => x.or(p)
+}
+
+export function then<T>(p: Parser<T>) {
+  return <U>(x: Parser<U>) => x.then(p)
 }
 
 export function mapper<T, U>(mapper: (t: T) => U) {

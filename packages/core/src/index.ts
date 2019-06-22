@@ -1,59 +1,61 @@
 import * as R from 'remeda'
 import P from 'parsimmon'
-import { skipOptWs, orOptWs, mapper, many } from './helper'
+import { skip, or, mapper, then, many } from './helper'
 import { ClassPropertyAST, Visibility, VisibilityChars } from 'types'
+
+const _ = P.optWhitespace
 
 const classKeyWord = R.pipe(
   'class',
   P.string,
-  skipOptWs,
+  skip(_),
 )
 
 const className = R.pipe(
   /^[A-Z]+[a-zA-Z0-9]*/,
   P.regexp,
-  skipOptWs,
+  skip(_),
 )
 
 const l = R.pipe(
   P.string('{'),
-  skipOptWs,
+  skip(_),
 )
 const r = R.pipe(
   P.string('}'),
-  skipOptWs,
+  skip(_),
 )
 
 const classExtendsKeyWord = R.pipe(
   'extends',
   P.string,
-  skipOptWs,
+  skip(_),
 )
 
 // class Hoge extends Poge
 //            ~~~~~~~~~~~~
 const classExtendsSection = R.pipe(
   P.seq(classExtendsKeyWord, className),
-  orOptWs,
+  or(_),
   mapper(name => (Array.isArray(name) ? name[1] : void 0)),
 )
 
 const visibility = R.pipe(
   /[\-#~+]{1}/,
   P.regexp,
-  orOptWs,
+  or(_),
 )
 
 const typeIdentify = R.pipe(
   /[A-Za-z]+[a-zA-Z0-9]*/,
   P.regexp,
-  skipOptWs,
+  skip(_),
 )
 
 const propertyName = R.pipe(
   /[A-Za-z]+[a-zA-Z0-9]*/,
   P.regexp,
-  skipOptWs,
+  skip(_),
 )
 
 const visibilityMap = Object.freeze({
@@ -82,7 +84,7 @@ const property = R.pipe(
   mapper(propertyMapper),
   many,
   mapper(properties => ({ properties })),
-  orOptWs,
+  or(_),
 )
 
 // class Hoge { }
@@ -110,26 +112,26 @@ const xlass = R.pipe(
 const start = R.pipe(
   '@startuml',
   P.string,
-  skipOptWs,
+  skip(_),
 )
 
 const end = R.pipe(
   '@enduml',
   P.string,
-  skipOptWs,
+  skip(_),
 )
 
-const root = P.optWhitespace.then(
-  P.seq(
-    start,
-    R.pipe(
+const root = R.pipe(
+  _,
+  then(
+    P.seq(
+      start,
       R.pipe(
-        xlass,
-        many,
+        many(xlass),
+        or(_),
       ),
-      orOptWs,
+      end,
     ),
-    end,
   ),
 )
 
