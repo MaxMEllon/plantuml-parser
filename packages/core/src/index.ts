@@ -1,6 +1,7 @@
 import * as R from 'remeda'
 import P from 'parsimmon'
 import { skipOptWs, orOptWs, mapper, many } from './helper'
+import { ClassPropertyAST, Visibility, VisibilityChars } from 'types'
 
 const classKeyWord = R.pipe(
   'class',
@@ -60,25 +61,25 @@ const visibilityMap = Object.freeze({
   '+': 'public',
   '#': 'protected',
   '~': 'package',
-})
+}) as { [t: string]: Visibility }
 
-type Visibility = keyof typeof visibilityMap
-
-const convertVisibilityString = (v: string) => {
-  const visibility = (/[\-+#~]{1}/.test(v) ? v : '~') as Visibility
+const convertVisibilityString = (v: string): Visibility => {
+  const visibility = (/[\-+#~]{1}/.test(v) ? v : '~') as VisibilityChars
   return visibilityMap[visibility]
 }
 
 // class Hoge {
 //   +String foo
 //   ~~~~~~~~~~~
+const propertyMapper = ([visibility, type, name]: [string, string, string]): ClassPropertyAST => ({
+  visibility: convertVisibilityString(visibility),
+  type,
+  name,
+})
+
 const property = R.pipe(
   P.seq(visibility, typeIdentify, propertyName),
-  mapper(([visibility, type, name]) => ({
-    visibility: convertVisibilityString(visibility),
-    type,
-    name,
-  })),
+  mapper(propertyMapper),
   many,
   mapper(properties => ({ properties })),
   orOptWs,
