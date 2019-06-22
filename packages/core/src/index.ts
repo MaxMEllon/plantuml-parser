@@ -1,6 +1,6 @@
 import * as R from 'remeda'
 import P from 'parsimmon'
-import { skipOptWs, orOptWs } from './helper'
+import { skipOptWs, orOptWs, mapper, many } from './helper'
 
 const classKeyWord = R.pipe(
   'class',
@@ -34,7 +34,8 @@ const classExtendsKeyWord = R.pipe(
 const classExtendsSection = R.pipe(
   P.seq(classExtendsKeyWord, className),
   orOptWs,
-).map(name => name[1])
+  mapper(name => (Array.isArray(name) ? name[1] : void 0)),
+)
 
 const visibility = R.pipe(
   /[\-#~+]{1}/,
@@ -72,28 +73,38 @@ const convertVisibilityString = (v: string) => {
 //   +String foo
 //   ~~~~~~~~~~~
 const property = R.pipe(
-  P.seq(visibility, typeIdentify, propertyName)
-    .map(([visibility, type, name]) => ({
-      visibility: convertVisibilityString(visibility),
-      type,
-      name,
-    }))
-    .many()
-    .map(properties => ({ properties })),
+  P.seq(visibility, typeIdentify, propertyName),
+  mapper(([visibility, type, name]) => ({
+    visibility: convertVisibilityString(visibility),
+    type,
+    name,
+  })),
+  many,
+  mapper(properties => ({ properties })),
   orOptWs,
 )
 
 // class Hoge { }
 //            ~~~
-const classBodySection = P.seq(l, property, r).map(([_l, body, _r]) => body)
+const classBodySection = R.pipe(
+  P.seq(l, property, r),
+  mapper(([_l, body, _r]) => body),
+)
 
-const xlass = P.seq(P.seq(classKeyWord, className, classExtendsSection), classBodySection).map(([[_1, name, extended], body]) => ({
-  class: {
-    name,
-    extended,
-    body,
-  },
-}))
+const xlass = R.pipe(
+  P.seq(
+    //
+    P.seq(classKeyWord, className, classExtendsSection),
+    classBodySection,
+  ),
+  mapper(([[_1, name, extended], body]) => ({
+    class: {
+      name,
+      extended,
+      body,
+    },
+  })),
+)
 
 const start = R.pipe(
   '@startuml',
@@ -111,7 +122,10 @@ const root = P.optWhitespace.then(
   P.seq(
     start,
     R.pipe(
-      xlass.many(),
+      R.pipe(
+        xlass,
+        many,
+      ),
       orOptWs,
     ),
     end,
